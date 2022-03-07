@@ -40,10 +40,16 @@
         this.loading = true;
         var base = this.binding.base || this.$snowstormBase
         var branch = this.binding.branch || this.$snowstormBranch
+        var langCode = this.$langCode || 'en';
         var queryString = `${base}/${branch}/concepts?activeFilter=true&term=${v}&
-                            termActive=true&language=en&offset=0&limit=50&ecl=${encodeURIComponent(this.binding.ecl)}`
+                            termActive=true&language=${langCode}&offset=0&limit=50&ecl=${encodeURIComponent(this.binding.ecl)}`;
         axios
-          .get(queryString)
+          .get(queryString, 
+              {
+                  headers: {
+                      'Accept-Language': langCode
+                  }
+              })
           .then(response => {
             this.items = response.data.items.map( e => e.fsn.term );
             this.loading = false;

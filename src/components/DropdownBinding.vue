@@ -19,10 +19,16 @@
       }
     },
     mounted() {
+      var langCode = this.$langCode || 'en';
       var queryString = `${this.$snowstormBase}/${this.$snowstormBranch}/concepts?activeFilter=true&
-                          termActive=true&language=en&offset=0&limit=50&ecl=${encodeURIComponent(this.binding.ecl)}`
+                          termActive=true&language=${langCode}&offset=0&limit=50&ecl=${encodeURIComponent(this.binding.ecl)}`
       axios
-        .get(queryString)
+        .get(queryString, 
+              {
+                  headers: {
+                      'Accept-Language': langCode
+                  }
+              })
         .then(response => {
           this.items = response.data.items.map( e => e.fsn.term );
         })

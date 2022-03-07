@@ -14,7 +14,7 @@
         </v-col>
         <v-col cols="6" md="6" class="text-right">
           <v-chip class="text-capitalize" color="amber darken-1" text-color="white">{{ 'Demo UI: ' + binding.type }}</v-chip>
-          <ConceptsListDialog :binding='binding' />
+          <ConceptsListDialog :binding='binding' v-bind:snowstormBranch='snowstormBranch' />
           <AutocompleteBinding :binding='binding' v-if="binding.type == 'autocomplete'"/>
           <AutocompleteWithRefset :binding='binding' v-if="binding.type == 'autocompleterefset'"/>
           <DropdownBinding :binding='binding' v-if="binding.type == 'dropdown'"/>
@@ -42,7 +42,8 @@
     props: {
       title: String,
       note: String,
-      bindings: Object
+      bindings: Object,
+      snowstormBranch: String
     },
     data: () => ({
       valid: false,

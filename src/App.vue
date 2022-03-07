@@ -15,10 +15,42 @@
           width="200"
           height="60"
         />
-        <h1>IPS Terminology Coding Guide</h1>
+        <h1>Drug Model Class Grouper ECLs</h1>
       </div>
       <v-spacer></v-spacer>
-      <v-btn color="purple lighten-1">
+      <v-menu offset-y>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn
+            color="purple lighten-1"
+            dark
+            v-bind="attrs"
+            v-on="on"
+            class="ml-4"
+          >
+           {{text}}
+          </v-btn>
+        </template>
+        <v-list>
+          <v-list-item-group>
+            <v-list-item>
+              <v-list-item-title @click="setInternational()">
+                International Edition
+              </v-list-item-title>
+            </v-list-item>
+            <v-list-item>
+              <v-list-item-title @click="setArgentina()">
+                Argentina Edition
+              </v-list-item-title>
+            </v-list-item>
+            <v-list-item>
+              <v-list-item-title @click="setNorway()">
+                Norway Edition
+              </v-list-item-title>
+            </v-list-item>
+          </v-list-item-group>
+        </v-list>
+      </v-menu>
+      <v-btn color="purple lighten-1" class="ml-4">
           <vue-excel-xlsx
             :data="bindings"
             :columns="columns"
@@ -74,9 +106,25 @@
         </v-list>
       </v-menu>
     </v-app-bar>
-
     <v-main>
-      <MainTabs :sections="sections"/>
+      <MainTabs :sections="sections" :snowstormBranch="snowstormBranch"/>
+      <v-snackbar
+        v-model="snackbar"
+        :timeout="timeout"
+      >
+        {{ text }}
+
+        <template v-slot:action="{ attrs }">
+          <v-btn
+            color="blue"
+            text
+            v-bind="attrs"
+            @click="snackbar = false"
+          >
+            Close
+          </v-btn>
+        </template>
+      </v-snackbar>
     </v-main>
   </v-app>
 </template>
@@ -110,9 +158,46 @@ export default {
   methods: {
     goToGithub() {
       window.open('https://github.com/alopezo/coding-demonstrator', '_blank');
+    },
+    setInternational() {
+      Vue.prototype.$snowstormBase = 'https://snowstorm.ihtsdotools.org/snowstorm/snomed-ct';
+      Vue.prototype.$codeSystemVersion = '2022-01-31';
+      Vue.prototype.$snowstormBranch = `MAIN/${this.$codeSystemVersion}`;
+      Vue.prototype.$langCode = 'en';
+      this.snowstormBranch = this.$snowstormBranch;
+      this.codeSystemVersionDisplay = this.$codeSystemVersion;
+      console.log('setInternational')
+      this.text = 'International Edition';
+      this.snackbar = true;
+    },
+    setArgentina() {
+      Vue.prototype.$snowstormBase = 'https://snowstorm.ihtsdotools.org/snowstorm/snomed-ct';
+      Vue.prototype.$codeSystemVersion = '2021-11-30';
+      Vue.prototype.$snowstormBranch = `MAIN/SNOMEDCT-ES/SNOMEDCT-AR/${this.$codeSystemVersion}`;
+      Vue.prototype.$langCode = 'es';
+      this.snowstormBranch = this.$snowstormBranch;
+      this.codeSystemVersionDisplay = this.$codeSystemVersion;
+      console.log('setArgentina')
+      this.text = 'Argentina Edition';
+      this.snackbar = true;
+    },
+    setNorway() {
+      Vue.prototype.$snowstormBase = 'https://snowstorm.ihtsdotools.org/snowstorm/snomed-ct';
+      Vue.prototype.$codeSystemVersion = '2021-10-15';
+      Vue.prototype.$snowstormBranch = `MAIN/SNOMEDCT-NO/${this.$codeSystemVersion}`;
+      Vue.prototype.$langCode = 'no';
+      this.snowstormBranch = this.$snowstormBranch;
+      this.codeSystemVersionDisplay = this.$codeSystemVersion;
+      console.log('setNorway')
+      this.text = 'Norway Edition';
+      this.snackbar = true;
     }
   },
   data: () => ({
+    snowstormBranch: '',
+    snackbar: false,
+    text: 'International Edition',
+    timeout: 2000,
     bindings: [],
     columns : [
                     {
@@ -130,79 +215,132 @@ export default {
                 ],
     codeSystemVersionDisplay: '',
     sections: {
-        'IPS-ALLERGIES': {
-          title: 'Allergies and Intolerances',
-          note: 'This section documents the relevant allergies or intolerances (conditions) for a patient, describing the kind of reaction (e.g. rash, anaphylaxis,..); preferably the agents that cause it; and optionally the criticality and the certainty of the allergy. At a minimum, it should list currently active and any relevant historical allergies and adverse reactions. If no information about allergies is available, or if no allergies are known this should be clearly documented in the section.',
+        'DM-MPS': {
+          title: 'Medicinal products',
+          note: 'This section contains all the Medicinal Product classes, with different levels of details.',
           bindings: {
-            'IPS-ALLERGIES-AllergyintolerancesubstanceconditionGPS' : {
-              title: 'Allergy intolerance substance condition (GPS) - IPS',
+            'DM-MPS-MedicinalProduct' : {
+              title: 'Medicinal products + groupers',
               type: 'autocomplete',
-              ecl: `(< 762766007 | Edible substance (substance)| OR
-              < 425620007 | Metal (substance)| OR 
-              < 410942007 |Drug or medicament (substance)| OR 
-              < 373873005 |Pharmaceutical / biologic product (product)|) AND
-              (^816080008 |International Patient Summary|)`,
+              ecl: `<< 763158003 |Medicinal product| :
+                    [0..*] 127489000 |Has active ingredient| = *,
+                    [0..0] 1142139005 |Count of base of active ingredient| = *,
+                    [0..0] 411116001 |Has manufactured dose form| = *,
+                    [0..0] 774158006 |Has product name| = *`,
               value: '',
-              note: 'IPS Allergy intolerance substance condition GPS value set. This value set includes the codes from the SNOMED International Global Patient Set (GPS) subset of SNOMED CT that are included in: all descendants of 762766007 | Edible substance (substance)|; all descendants of 406455002 | Allergen class (substance) |; all descendants of 425620007 | Metal (substance)|; all descendants of 373873005 | Pharmaceutical / biologic product (product)|; all descendants of 410942007 |Drug or medicament (substance)|. The current value set contains concepts from the September 2019 release of the GPS, which is based on the July 2019 SNOMED CT International Edition release.'
+              note: 'Medicinal products, contain at least provided ingredientes (open world assuption), no information on form.'
+            },
+            'DM-MPS-MedicinalProductOnly' : {
+              title: 'Medicinal products Only',
+              type: 'autocomplete',
+              ecl: `<< 763158003 |Medicinal product| :
+                    127489000 |Has active ingredient| = *,
+                    1142139005 |Count of base of active ingredient| = *,
+                    [0..0] 411116001 |Has manufactured dose form| = *,
+                    [0..0] 774158006 |Has product name| = *`,
+              value: '',
+              note: 'Medicinal products, containing only the provided ingredientes (close world assuption), with no information on form.'
+            },
+            'DM-MPS-MedicinalProductForm' : {
+              title: 'Medicinal product forms',
+              type: 'autocomplete',
+              ecl: `<< 763158003 |Medicinal product| :
+                    127489000 |Has active ingredient| = *,
+                    [0..0] 1142139005 |Count of base of active ingredient| = *,
+                    411116001 |Has manufactured dose form| = *,
+                    [0..0] 774158006 |Has product name| = *`,
+              value: '',
+              note: 'Medicinal products, with form details.'
+            },
+            'DM-MPS-MedicinalProductFormOnly' : {
+              title: 'Medicinal product forms only',
+              type: 'autocomplete',
+              ecl: `<< 763158003 |Medicinal product| :
+                    127489000 |Has active ingredient| = *,
+                    1142139005 |Count of base of active ingredient| = *,
+                    411116001 |Has manufactured dose form| = *,
+                    [0..0] 774158006 |Has product name| = *`,
+              value: '',
+              note: 'Medicinal products, with form details, containing only the provided ingredientes (close world assuption).'
+            },
+            'DM-MPS-MedicinalProductPreciseOnly' : {
+              title: 'Medicinal product precise only',
+              type: 'autocomplete',
+              ecl: `<< 763158003 |Medicinal product| :
+                    < 127489000 |Has active ingredient| = *,
+                    1142139005 |Count of base of active ingredient| = *,
+                    [0..0] 411116001 |Has manufactured dose form| = *,
+                    [0..0] 774158006 |Has product name| = *`,
+              value: '',
+              note: `Medicinal products, with form details, precise active ingredient, and containing only the provided ingredientes (close world assuption).
+                    <br><b>Not populated in the International Edition</b>`
+            },
+            'DM-MPS-RealMedicinalProduct' : {
+              title: 'Real Medicinal products',
+              type: 'autocomplete',
+              ecl: `<< 763158003 |Medicinal product| :
+                    <<127489000 |Has active ingredient| = *,
+                    [0..0] 1142139005 |Count of base of active ingredient| = *,
+                    [0..0] 411116001 |Has manufactured dose form| = *,
+                    774158006 |Has product name| = *`,
+              value: '',
+              note: `Real Medicinal products, contain ingredients, no information on form, and brand name.
+                    <br><b>Not populated in the International Edition</b>`
             }
           }
         },
-        'IPS-PROBLEMS': {
-          title: 'Problem List',
-          note: 'The IPS problem section lists and describes clinical problems or conditions currently being monitored for the patient.',
+        'DM-CDS': {
+          title: 'Clinical Drugs',
+          note: 'This section contains all the Clinical Drug classes, abstract and real.',
           bindings: {
-            'IPS-PROBLEMS-CoreProblemListFindingSituationEventIaa' : {
-              title: 'CORE Problem List Finding/Situation/Event (IPS Terminology)',
+            'DM-CDS-ClinicalDrugs' : {
+              title: 'Clinical drugs',
               type: 'autocomplete',
-              ecl: `(< 404684003 |Clinical finding (finding)| OR 
-              < 272379006 |Event (event)| OR 
-              (< 243796009 |Situation with explicit context (situation)| : [0..0] 363589002 |Associated procedure (attribute)| = *))`,
+              ecl: `<< 763158003 |Medicinal product| :
+                    << 127489000 |Has active ingredient| = *,
+                    1142139005 |Count of base of active ingredient| = *,
+                    411116001 |Has manufactured dose form| = *,
+                    ( 732945000 |Has presentation strength numerator unit| = * OR 1142138002 |Has concentration strength numerator value (attribute)|=*),
+                    [0..0] 774158006 |Has product name| = *`,
               value: '',
-              base: 'https://iaa.snomed.tools/snowstorm/snomed-ct',
-              branch: 'MAIN/SNOMEDCT-IPS-TEST2',
-              note: 'Searching problem list codes using the IPS Terminology (Sub-ontology)'
+              note: `Clinical Drugs, with ingredients, form, and strength, but no brand.`
             },
-            'IPS-PROBLEMS-CoreProblemListFindingSituationEventGpsUvIps' : {
-              title: 'CORE Problem List Finding/Situation/Event (IPS Refset)',
+            'DM-CDS-RealClinicalDrugs' : {
+              title: 'Real Clinical drugs',
               type: 'autocomplete',
-              ecl: `(< 404684003 |Clinical finding (finding)| OR 
-              < 272379006 |Event (event)| OR 
-              (< 243796009 |Situation with explicit context (situation)| : [0..0] 363589002 |Associated procedure (attribute)| = *)) AND 
-              (^816080008 |International Patient Summary|)`,
+              ecl: `<< 763158003 |Medicinal product| :
+                    << 127489000 |Has active ingredient| = *,
+                    1142139005 |Count of base of active ingredient| = *,
+                    411116001 |Has manufactured dose form| = *,
+                    ( 732945000 |Has presentation strength numerator unit| = * OR 1142138002 |Has concentration strength numerator value (attribute)|=*),
+                    774158006 |Has product name| = *`,
               value: '',
-              note: 'Searching problem list codes constraining to the IPS Refset, in a complete edition of SNOMED CT'
-            },
-            'IPS-PROBLEMS-CoreProblemListFindingSituationEventAllSNOMED' : {
-              title: 'CORE Problem List Finding/Situation/Event (All SNOMED CT)',
-              type: 'autocompleterefset',
-              ecl: `(< 404684003 |Clinical finding (finding)| OR 
-              < 272379006 |Event (event)| OR 
-              (< 243796009 |Situation with explicit context (situation)| : [0..0] 363589002 |Associated procedure (attribute)| = *))`,
-              refset: '816080008 |International Patient Summary|',
-              value: '',
-              note: 'Searching problem list codes in a complete edition of SNOMED CT, then mapping to select the proximal ancestors that are a member of the IPS Refset'
+              note: `Clinical Drugs, with ingredients, form, strength, and brand.
+                    <br><b>Not populated in the International Edition</b>`
             }
           }
         },
-        'IPS-PROCEDURES': {
-          title: 'Procedures',
-          note: 'The IPS procedures...',
+        'DM-PCDS': {
+          title: 'Packaged Clinical Drugs',
+          note: 'This section contains all the packaged Clinical Drug classes, abstract and real.',
           bindings: {
-            'IPS-PROCEDURES-procedures' : {
-              title: 'Procedures',
+            'DM-CDS-PackagedClinicalDrugs' : {
+              title: 'Packaged Clinical drugs',
               type: 'autocomplete',
-              ecl: `((< 71388002 |Procedure (procedure)|)
-              MINUS (< 14734007 |Administrative procedure (procedure)|
-              OR < 59524001 |Blood bank procedure (procedure)|
-              OR < 389067005 |Community health procedure (procedure)|
-              OR < 442006003 |Determination of information related to transfusion (procedure)|
-              OR < 225288009 |Environmental care procedure (procedure)|
-              OR < 308335008 |Patient encounter procedure (procedure)|
-              OR < 710135002 |Promotion (procedure)|
-              OR < 389084004 |Staff related procedure (procedure)|)) AND 
-              (^816080008 |International Patient Summary|) `,
+              ecl: `<< 781405001 |Medicinal product package|: 
+                    [0..0] 774158006 |Has product name| = *`,
               value: '',
-              note: 'This value set includes codes from SNOMED Clinical Terms®: all descendants of 71388002 | Procedure (procedure)|, excluding [all subtypes of 14734007, all subtypes of 59524001, all subtypes of 389067005, all subtypes of 442006003, all subtypes of 225288009, all subtypes of 308335008, all subtypes of 710135002, all subtypes of 389084004].'
+              note: `Packaged Clinical Drugs, with ingredients, form, strength and package details, but no brand.
+                    <br><b>Not populated in the International Edition</b>`
+            },
+            'DM-CDS-RealPackagedClinicalDrugs' : {
+              title: 'Real Packaged Clinical drugs',
+              type: 'autocomplete',
+              ecl: `<< 781405001 |Medicinal product package|: 
+                    774158006 |Has product name| = *`,
+              value: '',
+              note: `Packaged Clinical Drugs, with ingredients, form, strength, package details, and brand.
+                    <br><b>Not populated in the International Edition</b>`
             }
           }
         }

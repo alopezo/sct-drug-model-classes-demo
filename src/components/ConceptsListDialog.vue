@@ -101,11 +101,19 @@ pre {
             total: 0,
             selectedItem: 0,
             dialog: false,
-            queryString: ''
+            queryString: '',
         }),
         props: {
             binding: {
                 type: Object
+            },
+            snowstormBranch: String
+        },
+        watch: {
+            snowstormBranch(oldp, newp) {
+                console.log('watch', oldp, newp)
+                this.items = [];
+                this.getData();
             }
         },
         mounted() {
@@ -120,12 +128,18 @@ pre {
             },
             getData() {
                 this.loading = true;
-                var base = this.binding.base || this.$snowstormBase
-                var branch = this.binding.branch || this.$snowstormBranch
+                var base = this.$snowstormBase || this.binding.base
+                var branch = this.$snowstormBranch || this.binding.branch
+                var langCode = this.$langCode || 'en';
                 this.queryString = `${base}/${branch}/concepts?activeFilter=true&
-                            termActive=true&language=en&offset=0&limit=50&ecl=${encodeURIComponent(this.binding.ecl)}`
+                            termActive=true&language=${langCode}&offset=0&limit=50&ecl=${encodeURIComponent(this.binding.ecl)}`;
                 axios
-                    .get(this.queryString)
+                    .get(this.queryString, 
+                        {
+                            headers: {
+                                'Accept-Language': langCode
+                            }
+                        })
                     .then(response => {
                         // this.items = response.data.items.map( e => e.fsn.term );
                         this.items = this.items.concat(response.data.items);

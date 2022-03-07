@@ -89,10 +89,16 @@
         this.mapping = true;
         var ancestorsEcl = `(>>${this.binding.value.conceptId}) AND (^${this.binding.refset})`;
         var mapEcl = `(${ancestorsEcl}) MINUS >(${ancestorsEcl})`;
+        var langCode = this.$langCode || 'en';
         var queryString = `${this.$snowstormBase}/${this.$snowstormBranch}/concepts?activeFilter=true&
-                            termActive=true&language=en&offset=0&limit=50&ecl=${encodeURIComponent(mapEcl)}`
+                            termActive=true&language=${langCode}&offset=0&limit=50&ecl=${encodeURIComponent(mapEcl)}`
         axios
-          .get(queryString)
+          .get(queryString, 
+              {
+                  headers: {
+                      'Accept-Language': langCode
+                  }
+              })
           .then(response => {
             var matches = response.data.items;
             if (matches.length > 0) {

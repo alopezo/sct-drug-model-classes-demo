@@ -5,7 +5,7 @@
         {{ section.title }}
       </v-tab>
       <v-tab-item v-for="(section, name) in sections" :key="name" :value="name">
-        <SectionPanel :title="section.title" :note="section.note" :bindings="section.bindings"/>
+        <SectionPanel :title="section.title" :note="section.note" :bindings="section.bindings" :snowstormBranch="snowstormBranch"/>
       </v-tab-item>
     </v-tabs>
     <v-tabs-items>
@@ -27,7 +27,8 @@
     methods: {
     },
     props: {
-      sections: Object
+      sections: Object,
+      snowstormBranch: String
     }
   }
 </script>
