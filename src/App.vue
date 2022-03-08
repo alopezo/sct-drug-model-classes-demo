@@ -15,7 +15,7 @@
           width="200"
           height="60"
         />
-        <h1>Drug Model Class Grouper ECLs</h1>
+        <h1>Drug Model Classes ECLs</h1>
       </div>
       <v-spacer></v-spacer>
       <v-menu offset-y>
@@ -215,76 +215,77 @@ export default {
                 ],
     codeSystemVersionDisplay: '',
     sections: {
-        'DM-MPS': {
-          title: 'Medicinal products',
-          note: 'This section contains all the Medicinal Product classes, with different levels of details.',
+        'DM-GRS': {
+          title: 'Groupers',
+          note: 'This section contains all the "Containing" Medicinal Product classes, plus groupers.',
           bindings: {
             'DM-MPS-MedicinalProduct' : {
-              title: 'Medicinal products + groupers',
+              title: 'Medicinal product + groupers',
               type: 'autocomplete',
               ecl: `<< 763158003 |Medicinal product| :
-                    [0..*] 127489000 |Has active ingredient| = *,
                     [0..0] 1142139005 |Count of base of active ingredient| = *,
                     [0..0] 411116001 |Has manufactured dose form| = *,
                     [0..0] 774158006 |Has product name| = *`,
               value: '',
               note: 'Medicinal products, contain at least provided ingredientes (open world assuption), no information on form.'
             },
-            'DM-MPS-MedicinalProductOnly' : {
-              title: 'Medicinal products Only',
+            'DM-MPS-MedicinalProductForm' : {
+              title: 'Medicinal product form + groupers',
               type: 'autocomplete',
               ecl: `<< 763158003 |Medicinal product| :
-                    127489000 |Has active ingredient| = *,
+                    [0..0] 1142139005 |Count of base of active ingredient| = *,
+                    411116001 |Has manufactured dose form| = *,
+                    [0..0] 774158006 |Has product name| = *`,
+              value: '',
+              note: 'Medicinal products, with form details.'
+            }
+          }
+        },
+        'DM-MPS': {
+          title: 'Medicinal products',
+          note: 'This section contains all the "Only" Medicinal product and Medicinal product form classes.',
+          bindings: {
+            'DM-MPS-MedicinalProductOnly' : {
+              title: 'Medicinal product only',
+              type: 'autocomplete',
+              ecl: `<< 763158003 |Medicinal product| :
                     1142139005 |Count of base of active ingredient| = *,
                     [0..0] 411116001 |Has manufactured dose form| = *,
                     [0..0] 774158006 |Has product name| = *`,
               value: '',
               note: 'Medicinal products, containing only the provided ingredientes (close world assuption), with no information on form.'
             },
-            'DM-MPS-MedicinalProductForm' : {
-              title: 'Medicinal product forms',
-              type: 'autocomplete',
-              ecl: `<< 763158003 |Medicinal product| :
-                    127489000 |Has active ingredient| = *,
-                    [0..0] 1142139005 |Count of base of active ingredient| = *,
-                    411116001 |Has manufactured dose form| = *,
-                    [0..0] 774158006 |Has product name| = *`,
-              value: '',
-              note: 'Medicinal products, with form details.'
-            },
             'DM-MPS-MedicinalProductFormOnly' : {
-              title: 'Medicinal product forms only',
+              title: 'Medicinal product form only',
               type: 'autocomplete',
               ecl: `<< 763158003 |Medicinal product| :
-                    127489000 |Has active ingredient| = *,
                     1142139005 |Count of base of active ingredient| = *,
                     411116001 |Has manufactured dose form| = *,
+                    [0..0] 732943007 |Has basis of strength substance (attribute)| = *,
                     [0..0] 774158006 |Has product name| = *`,
               value: '',
               note: 'Medicinal products, with form details, containing only the provided ingredientes (close world assuption).'
             },
             'DM-MPS-MedicinalProductPreciseOnly' : {
-              title: 'Medicinal product precise only',
+              title: 'Medicinal product precisely',
               type: 'autocomplete',
               ecl: `<< 763158003 |Medicinal product| :
-                    < 127489000 |Has active ingredient| = *,
+                    762949000 |Has precise active ingredient (attribute)| = * ,
                     1142139005 |Count of base of active ingredient| = *,
-                    [0..0] 411116001 |Has manufactured dose form| = *,
+                    [0..0] 732943007 |Has basis of strength substance (attribute)| = *,
                     [0..0] 774158006 |Has product name| = *`,
               value: '',
               note: `Medicinal products, with form details, precise active ingredient, and containing only the provided ingredientes (close world assuption).
                     <br><b>Not populated in the International Edition</b>`
             },
             'DM-MPS-RealMedicinalProduct' : {
-              title: 'Real Medicinal products',
+              title: 'Real medicinal product',
               type: 'autocomplete',
               ecl: `<< 763158003 |Medicinal product| :
-                    <<127489000 |Has active ingredient| = *,
-                    [0..0] 1142139005 |Count of base of active ingredient| = *,
                     [0..0] 411116001 |Has manufactured dose form| = *,
                     774158006 |Has product name| = *`,
               value: '',
-              note: `Real Medicinal products, contain ingredients, no information on form, and brand name.
+              note: `Real Medicinal products, contain only the provided ingredients (close world assuption), no information on form, and brand name.
                     <br><b>Not populated in the International Edition</b>`
             }
           }
@@ -294,25 +295,19 @@ export default {
           note: 'This section contains all the Clinical Drug classes, abstract and real.',
           bindings: {
             'DM-CDS-ClinicalDrugs' : {
-              title: 'Clinical drugs',
+              title: 'Clinical drug',
               type: 'autocomplete',
               ecl: `<< 763158003 |Medicinal product| :
-                    << 127489000 |Has active ingredient| = *,
-                    1142139005 |Count of base of active ingredient| = *,
-                    411116001 |Has manufactured dose form| = *,
-                    ( 732945000 |Has presentation strength numerator unit| = * OR 1142138002 |Has concentration strength numerator value (attribute)|=*),
+                    732943007 |Has basis of strength substance (attribute)| = *,
                     [0..0] 774158006 |Has product name| = *`,
               value: '',
               note: `Clinical Drugs, with ingredients, form, and strength, but no brand.`
             },
             'DM-CDS-RealClinicalDrugs' : {
-              title: 'Real Clinical drugs',
+              title: 'Real Clinical drug',
               type: 'autocomplete',
               ecl: `<< 763158003 |Medicinal product| :
-                    << 127489000 |Has active ingredient| = *,
-                    1142139005 |Count of base of active ingredient| = *,
-                    411116001 |Has manufactured dose form| = *,
-                    ( 732945000 |Has presentation strength numerator unit| = * OR 1142138002 |Has concentration strength numerator value (attribute)|=*),
+                    732943007 |Has basis of strength substance (attribute)| = *,
                     774158006 |Has product name| = *`,
               value: '',
               note: `Clinical Drugs, with ingredients, form, strength, and brand.
