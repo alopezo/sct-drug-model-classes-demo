@@ -1,5 +1,8 @@
 # sct-drug-model-classes-demo
 
+## Browse Drug Classes ECL and Coding example
+https://alopezo.github.io/sct-drug-model-classes-demo/
+
 ## Project setup
 ```
 npm install
